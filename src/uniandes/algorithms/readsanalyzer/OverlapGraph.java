@@ -49,6 +49,11 @@ public class OverlapGraph implements RawReadProcessor {
 		//2.1 Crear un ArrayList para guardar las secuencias que tengan como prefijo un sufijo de la nueva secuencia
 		//2.2 Recorrer las secuencias existentes para llenar este ArrayList creando los nuevos sobrelapes que se encuentren.
 		//2.3 Después del recorrido para llenar la lista, agregar la nueva secuencia con su lista de sucesores al mapa de sobrelapes 
+		
+		//TODO: Paso 3. Actualizar el mapa de sobrelapes con los sobrelapes en los que la secuencia nueva sea sucesora de una secuencia existente
+		// Recorrer el mapa de sobrelapes. Para cada secuencia existente que tenga como sufijo un prefijo de la nueva secuencia
+		//se agrega un nuevo sobrelape a la lista de sobrelapes de la secuencia existente
+		
 		ArrayList<String> keys = new ArrayList<>(readCounts.keySet());
 		ArrayList<ReadOverlap> matches = new ArrayList<ReadOverlap>();
 		
@@ -57,15 +62,16 @@ public class OverlapGraph implements RawReadProcessor {
 			if(ovlpLength >= minOverlap) {
 				matches.add(new ReadOverlap(seq, key, ovlpLength));
 			}
+			
+			ovlpLength = getOverlapLength(key, seq);
+			if(ovlpLength >= minOverlap) {
+				ArrayList<ReadOverlap> overlapsForKey = overlaps.get(key);
+				overlapsForKey.add(new ReadOverlap(key, seq, ovlpLength));
+				overlaps.put(key, overlapsForKey);
+			}
 		}
 		
 		overlaps.put(seq, matches);
-		
-		//TODO: Paso 3. Actualizar el mapa de sobrelapes con los sobrelapes en los que la secuencia nueva sea sucesora de una secuencia existente
-		// Recorrer el mapa de sobrelapes. Para cada secuencia existente que tenga como sufijo un prefijo de la nueva secuencia
-		//se agrega un nuevo sobrelape a la lista de sobrelapes de la secuencia existente
-		
-		
 	}
 	/**
 	 * Returns the length of the maximum overlap between a suffix of sequence 1 and a prefix of sequence 2
@@ -116,8 +122,27 @@ public class OverlapGraph implements RawReadProcessor {
 	 * observed as many times as the corresponding array index. Position zero should be equal to zero
 	 */
 	public int[] calculateAbundancesDistribution() {
-		//TODO: Implementar metodo
-		return null;
+		ArrayList<String> reads = new ArrayList<String>(readCounts.keySet());
+		Map<Integer, Integer> freqs = new HashMap<Integer, Integer>();
+		int biggest = 0;
+		for(String read : reads) {
+			Integer count = readCounts.get(read);
+			Integer freq = freqs.get(count);
+			if(freq == null) {
+				freqs.put(count, 1);
+			} else {
+				freqs.put(count, freq + 1);
+			}
+			
+			if(count > biggest) biggest = count;
+		}
+		
+		int[] res = new int[biggest + 1];
+		for(Integer count : freqs.keySet()) {
+			res[count] = freqs.get(count);
+		}
+		
+		return res;
 	}
 	/**
 	 * Calculates the distribution of number of successors
