@@ -158,8 +158,28 @@ public class OverlapGraph implements RawReadProcessor {
 	 * @return String Source sequence for the layout path that will be the left most subsequence in the assembly
 	 */
 	public String getSourceSequence () {
-		// TODO Implementar metodo recorriendo las secuencias existentes y buscando una secuencia que no tenga predecesores
-		return null;
+		HashMap<String, Integer> nodeInDegree = new HashMap<String, Integer>(overlaps.keySet().size()); 
+		for(String key : overlaps.keySet()) {
+			for(ReadOverlap readOverlap : overlaps.get(key)) {
+				String dest = readOverlap.getDestSequence();
+				Integer count = nodeInDegree.get(dest);
+				if(count == null) nodeInDegree.put(dest, 1);
+				else nodeInDegree.put(dest, count + 1);
+			}
+		}
+		
+		Integer smallestDegree = Integer.MAX_VALUE;
+		String smallestSeq = "";
+		for(String key : overlaps.keySet()) {
+			Integer degree = nodeInDegree.get(key);
+			if(degree == null) degree = 0;
+			
+			if(degree < smallestDegree) {
+				smallestDegree = degree;
+				smallestSeq = key;
+			}
+		}
+		return smallestSeq;
 	}
 	
 	/**
