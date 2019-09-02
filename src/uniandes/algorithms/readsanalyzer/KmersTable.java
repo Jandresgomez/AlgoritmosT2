@@ -1,5 +1,7 @@
 package uniandes.algorithms.readsanalyzer;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import ngsep.sequences.RawRead;
@@ -8,13 +10,15 @@ import ngsep.sequences.RawRead;
  * @author Jorge Duitama
  */
 public class KmersTable implements RawReadProcessor {
+	Map<String, Integer> kmerTable = new HashMap<String, Integer>();
+	private int kmerSize;
 
 	/**
 	 * Creates a new table with the given k-mer size
 	 * @param kmerSize length of k-mers stored in this table
 	 */
 	public KmersTable(int kmerSize) {
-		// TODO: Implementar metodo
+		this.kmerSize = kmerSize;
 	}
 
 	/**
@@ -25,15 +29,25 @@ public class KmersTable implements RawReadProcessor {
 		String sequence = read.getSequenceString();
 		// TODO Implementar metodo. Calcular todos los k-mers del tamanho dado en la constructora y actualizar la abundancia de cada k-mer
 		
+		for(int i = kmerSize; i <= sequence.length() - kmerSize; i++) {
+			String kmer = sequence.substring(i, i + kmerSize);
+			Integer count = kmerTable.get(kmer);
+			if(count != null) {
+				kmerTable.put(kmer, count + 1);
+			} else {
+				kmerTable.put(kmer, 1);
+			}
+		}
 	}
+	
+	//   n-4 n-3 n-2 n-1 n 
 	
 	/**
 	 * List with the different k-mers found up to this point
 	 * @return Set<String> set of k-mers
 	 */
 	public Set<String> getDistinctKmers() {
-		// TODO Implementar metodo
-		return null;
+		return kmerTable.keySet();
 	}
 	
 	/**
@@ -42,8 +56,9 @@ public class KmersTable implements RawReadProcessor {
 	 * @return int times that the given k-mer have been extracted from given reads
 	 */
 	public int getAbundance(String kmer) {
-		// TODO Implementar metodo
-		return 0;
+		Integer count = kmerTable.get(kmer);
+		if(count == null) return 0;
+		return count;
 	}
 	
 	/**
@@ -52,7 +67,15 @@ public class KmersTable implements RawReadProcessor {
 	 * observed as many times as the corresponding array index. Position zero should be equal to zero
 	 */
 	public int[] calculateAbundancesDistribution() {
-		// TODO Implementar metodo
-		return null;
+		int biggest = 0;
+		for(String key : kmerTable.keySet()) {
+			int count = kmerTable.get(key);
+			if(biggest < count) biggest = count;
+		}
+		int[] data = new int[biggest + 1];
+		
+		for(String key : kmerTable.keySet()) data[kmerTable.get(key)]++;
+		
+		return data;
 	}
 }

@@ -48,7 +48,17 @@ public class SimpleReadsSimulator {
 			// en la cadena sequence. Extraer la lectura de tamanho readLength e imprimirla en formato fastq.
 			// Utilizar la cadena fixedQSStr para generar calidades fijas para el formato
 			
-			
+			for(int k = 0; k < numReads; k++) {
+				int pos = (int)(Math.random()*(seqLength - readLength));
+				String smallRead = sequence.substring(pos, pos + readLength);
+				String id = String.format("@%d-%d", 15, 28);
+				System.out.println(id);
+				printRead(id, smallRead, fixedQSStr);
+			}
 		}
+	}
+	
+	public static void printRead(String id, String read, String qualityScore) {
+		
 	}
 }
