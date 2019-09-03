@@ -213,10 +213,12 @@ public class OverlapGraph implements RawReadProcessor {
 	 */
 	public ArrayList<ReadOverlap> getLayoutPath() {
 		ArrayList<ReadOverlap> layout = new ArrayList<>();
-		HashSet<String> visitedSequences = new HashSet<>(); 
+		HashSet<String> visitedSequences = new HashSet<>();
 		// Comenzar por la secuencia fuente que calcula el método anterior
-		// Luego, hacer un ciclo en el que en cada paso se busca la secuencia no visitada que tenga mayor sobrelape con la secuencia actual.
-		// Agregar el sobrelape a la lista de respuesta y la secuencia destino al conjunto de secuencias visitadas. Parar cuando no se encuentre una secuencia nueva
+		// Luego, hacer un ciclo en el que en cada paso se busca la secuencia no visitada que tenga mayor 
+		// sobrelape con la secuencia actual.
+		// Agregar el sobrelape a la lista de respuesta y la secuencia destino al conjunto de secuencias visitadas. 
+		// Parar cuando no se encuentre una secuencia nueva
 		
 		String currentSeq = getSourceSequence();
 		visitedSequences.add(currentSeq);
@@ -233,8 +235,7 @@ public class OverlapGraph implements RawReadProcessor {
 					max = readOverlap;
 					maxOverlap = readOverlap.getOverlap();
 				}
-			}
-			
+			}		
 			if(max == null) {
 				deadEnd = true;
 			} else {
@@ -254,20 +255,21 @@ public class OverlapGraph implements RawReadProcessor {
 	public String getAssembly () {
 		ArrayList<ReadOverlap> layout = getLayoutPath();
 		StringBuilder assembly = new StringBuilder();
-		// Recorrer el layout y ensamblar la secuencia agregando al objeto assembly las bases adicionales que aporta la región de cada secuencia destino que está a la derecha del sobrelape 
+		// Recorrer el layout y ensamblar la secuencia agregando al objeto assembly las bases adicionales 
+		// que aporta la región de cada secuencia destino que está a la derecha del sobrelape 
 		
-		ArrayList<String> sequence = new ArrayList<String>();
 		for(ReadOverlap read : layout) {
 			String seq = read.getDestSequence();
-			String part = seq.substring(seq.length() - read.getOverlap(), seq.length());
+			String part = seq.substring(read.getOverlap(), seq.length());
 			assembly.append(part);
-			sequence.add(part);
 		}
 		
 		//Try to save the assembly to a file if the filepath does exist
 		try (PrintWriter pw = new PrintWriter(new File(FILE_PATH))) {
-			for(String s : sequence) pw.println(s);
-		} catch(Exception e) {}
+			pw.println(assembly.toString());
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 
 		return assembly.toString();
 	}

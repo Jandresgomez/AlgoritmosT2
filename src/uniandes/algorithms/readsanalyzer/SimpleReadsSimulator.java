@@ -25,7 +25,9 @@ public class SimpleReadsSimulator {
 	 */
 	public static void main(String[] args) throws Exception {
 		String filename = args[0];
+		//Tamaño de las lecturas
 		int readLength = Integer.parseInt(args[1]);
+		//Cantidad de lecturas
 		int numReads = Integer.parseInt(args[2]);
 		String outFile = args[3];
 		FastaSequencesHandler handler = new FastaSequencesHandler();
@@ -33,32 +35,52 @@ public class SimpleReadsSimulator {
 		QualifiedSequenceList sequences = handler.loadSequences(filename);
 		if(sequences.size()==0) throw new Exception("No sequences found in file: "+filename);
 		QualifiedSequence seq = sequences.get(0);
+		//Genoma completo
 		String sequence = seq.getCharacters().toString();
+		//Longitud del genoma
 		int seqLength = sequence.length();
 		System.out.println("Length of the sequence to simulate reads: "+seqLength);
+		//Profundidad
 		double averageRD = ((double)numReads*readLength)/seqLength;
 		System.out.println("Expected average RD: "+averageRD);
 		char [] fixedQS = new char [readLength];
 		Arrays.fill(fixedQS, '5');
+		//Quality Scores
 		String fixedQSStr = new String(fixedQS);
 		Random random = new Random();
 		
 		try (PrintStream out = new PrintStream(outFile)){
-			// TODO: Generar lecturas aleatorias. Utilizar el objeto random para generar una posicion aleatoria de inicio
+			// TODO: Generar lecturas aleatorias. Utilizar el objeto random para generar una posicion 
+			// aleatoria de inicio
 			// en la cadena sequence. Extraer la lectura de tamanho readLength e imprimirla en formato fastq.
 			// Utilizar la cadena fixedQSStr para generar calidades fijas para el formato
 			
-			for(int k = 0; k < numReads; k++) {
-				int pos = (int)(Math.random()*(seqLength - readLength));
+			int[] freq = new int[seqLength - readLength + 1];
+			
+			for(int k = 0; k <= numReads; k++) {
+				int pos = random.nextInt(seqLength - readLength + 1);
+				freq[pos]++;
 				String smallRead = sequence.substring(pos, pos + readLength);
-				String id = String.format("@%d-%d", 15, 28);
+				//%d es un parámetro decimal
+				String id = String.format("@%d-%d",k,pos	);
 				System.out.println(id);
-				printRead(id, smallRead, fixedQSStr);
+				//System.out.println(smallRead);
+				printRead(out, id, smallRead, fixedQSStr);
 			}
+			
+			try (PrintStream ps = new PrintStream("./data/freq.out")) {
+				ps.append(String.valueOf(averageRD) + "\n");
+				for(int i : freq) ps.append(i + "\n");
+				ps.flush();
+			} catch(Exception e) { e.printStackTrace(); }
 		}
 	}
 	
-	public static void printRead(String id, String read, String qualityScore) {
-		
+	public static void printRead(PrintStream out, String id, String read, String qualityScore) {
+		out.append(id+"\n");
+		out.append(read+"\n");
+		out.append("+"+"\n");
+		out.append(qualityScore+"\n");
+		out.flush();
 	}
 }
