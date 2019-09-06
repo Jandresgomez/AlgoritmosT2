@@ -1,7 +1,11 @@
 package uniandes.algorithms.readsanalyzer;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 
 import ngsep.sequences.QualifiedSequence;
@@ -21,6 +25,7 @@ public class SimpleReadsSimulator {
 	 * args[1]: Length of the reads to simulate
 	 * args[2]: Number of reads to simulate
 	 * args[3]: Path to the output file
+	 * args[4]: Error rate to simulate
 	 * @throws Exception If the fasta file can not be loaded
 	 */
 	public static void main(String[] args) throws Exception {
@@ -49,10 +54,18 @@ public class SimpleReadsSimulator {
 		String fixedQSStr = new String(fixedQS);
 		Random random = new Random();
 		
+		//Error rate to simulate
+		double errorRate = 0;
+		if(args.length > 4) errorRate = Double.parseDouble(args[4]);
+		
+		//Crear diccionario con los caracteres que tiene la secuencia para simular errores coherentes
+		HashSet<Character> dict = new HashSet<Character>();
+		for(char k : sequence.toCharArray()) dict.add(k);
+		
 		try (PrintStream out = new PrintStream(outFile)){
 			// TODO: Generar lecturas aleatorias. Utilizar el objeto random para generar una posicion 
-			// aleatoria de inicio
-			// en la cadena sequence. Extraer la lectura de tamanho readLength e imprimirla en formato fastq.
+			// aleatoria de inicio en la cadena sequence. Extraer la lectura de tamanho readLength
+			//e imprimirla en formato fastq.
 			// Utilizar la cadena fixedQSStr para generar calidades fijas para el formato
 			
 			int[] freq = new int[seqLength - readLength + 1];
@@ -61,10 +74,22 @@ public class SimpleReadsSimulator {
 				int pos = random.nextInt(seqLength - readLength + 1);
 				freq[pos]++;
 				String smallRead = sequence.substring(pos, pos + readLength);
-				//%d es un parámetro decimal
-				String id = String.format("@%d-%d",k,pos	);
+				String id = String.format("@%d-%d",k,pos);
 				System.out.println(id);
-				//System.out.println(smallRead);
+				
+				//Intervenir en caso de tener que simular error
+				if(errorRate > Math.random()) {
+					ArrayList<Character> tempDict = new ArrayList<Character>(dict);
+					int errPos = random.nextInt(smallRead.length());
+					
+					//Remove current char at pos to avoid replacing with same char
+					tempDict.remove(tempDict.indexOf(smallRead.charAt(errPos)));
+					
+					//Generate error character thats not the one that should be read
+					char errChar = tempDict.get(random.nextInt(tempDict.size()));
+					smallRead = smallRead.substring(0, errPos) + errChar + smallRead.substring(errPos + 1, smallRead.length());
+				}
+				
 				printRead(out, id, smallRead, fixedQSStr);
 			}
 			

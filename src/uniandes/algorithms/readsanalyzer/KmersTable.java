@@ -28,8 +28,9 @@ public class KmersTable implements RawReadProcessor {
 	public void processRead(RawRead read) {
 		String sequence = read.getSequenceString();
 		// TODO Implementar metodo. Calcular todos los k-mers del tamanho dado en la constructora y actualizar la abundancia de cada k-mer
-		
-		for(int i = kmerSize; i <= sequence.length() - kmerSize; i++) {
+		System.out.println(sequence.length() - kmerSize);
+		for(int i = 0; i <= sequence.length() - kmerSize; i++) {
+			
 			String kmer = sequence.substring(i, i + kmerSize);
 			Integer count = kmerTable.get(kmer);
 			if(count != null) {

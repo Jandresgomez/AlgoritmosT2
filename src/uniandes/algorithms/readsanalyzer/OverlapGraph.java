@@ -172,7 +172,11 @@ public class OverlapGraph implements RawReadProcessor {
 		
 		int[] res = new int[biggest + 1];
 		for(Integer count : freqs.keySet()) {
-			res[count] = freqs.get(count);
+			if(count == 0) {
+				res[count] = 0;
+			}else {
+				res[count] = freqs.get(count);
+			}
 		}
 		
 		return res;
